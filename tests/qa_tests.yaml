@@ -1,0 +1,170 @@
+# CanopyWave Model Tester - Test Cases
+#
+# Supported metrics:
+#   - exact_match: Precise string matching (for math, fixed answers)
+#   - contains: Check if response contains keyword(s)
+#   - contains_any: Check if response contains at least one keyword
+#   - regex_match: Match against a regex pattern
+#   - ss_score: Semantic similarity (requires sentence-transformers)
+#   - bleu: BLEU score for text generation
+#   - rouge: ROUGE-L score for summarization
+#   - composite: Weighted combination of multiple metrics
+
+config:
+  default_model: "deepseek/deepseek-chat-v3.2"
+  timeout: 120
+
+# Models to compare in QA reports
+models:
+  - zai/glm-5
+  - deepseek/deepseek-chat-v3.2
+  - moonshotai/kimi-k2.5
+  - zai/glm-4.7
+  - xiaomimimo/mimo-v2-flash
+  - minimax/minimax-m2.5
+  - minimax/minimax-m2.1
+  - qwen/qwen-3.5
+
+tests:
+  # ═══════════════════════════════════════════════════
+  # 数学计算测试 (Math Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: math_addition_simple
+    prompt: "What is 1234 + 5678? Just give me the number."
+    metric: exact_match
+    expected: "6912"
+    tags: ["math", "addition"]
+
+  - id: math_multiplication
+    prompt: "Calculate 45 × 23. Only output the result."
+    metric: exact_match
+    expected: "1035"
+    tags: ["math", "multiplication"]
+
+  - id: math_percentage
+    prompt: "What is 25% of 200? Just the number please."
+    metric: contains
+    expected: "50"
+    tags: ["math", "percentage"]
+
+  # ═══════════════════════════════════════════════════
+  # 事实性问答测试 (Factual QA Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: factual_capital_france
+    prompt: "What is the capital of France?"
+    metric: contains
+    expected: "Paris"
+    tags: ["factual", "geography"]
+
+  - id: factual_capital_japan
+    prompt: "What is the capital city of Japan?"
+    metric: contains
+    expected: "Tokyo"
+    tags: ["factual", "geography"]
+
+  - id: factual_creator_python
+    prompt: "Who created the Python programming language?"
+    metric: contains_any
+    expected: ["Guido van Rossum", "Guido"]
+    tags: ["factual", "tech"]
+
+  - id: factual_water_formula
+    prompt: "What is the chemical formula for water?"
+    metric: contains
+    expected: "H2O"
+    tags: ["factual", "chemistry"]
+
+  # ═══════════════════════════════════════════════════
+  # 推理与逻辑测试 (Reasoning Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: reasoning_sequence
+    prompt: "What comes next in the sequence: 2, 4, 8, 16, ?"
+    metric: contains
+    expected: "32"
+    tags: ["reasoning", "math"]
+
+  - id: reasoning_logic
+    prompt: "If all dogs are animals, and Buddy is a dog, what can we conclude about Buddy?"
+    metric: contains
+    expected: "animal"
+    tags: ["reasoning", "logic"]
+
+  # ═══════════════════════════════════════════════════
+  # 创意生成测试 (Creative Generation Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: creative_story
+    prompt: "Tell me a very short story (2-3 sentences) about a robot learning to paint."
+    metric: contains_any
+    expected: ["robot", "paint", "art", "brush", "canvas", "color"]
+    tags: ["creative", "story"]
+
+  - id: creative_poem
+    prompt: "Write a haiku about the moon."
+    metric: contains_any
+    expected: ["moon", "night", "light", "sky", "glow", "silver"]
+    tags: ["creative", "poem"]
+
+  # ═══════════════════════════════════════════════════
+  # 代码生成测试 (Code Generation Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: code_python_hello
+    prompt: "Write a Python function called 'greet' that takes a name parameter and returns 'Hello, {name}!'"
+    metric: contains_any
+    expected: ["def greet", "return", "Hello"]
+    tags: ["code", "python"]
+
+  - id: code_fibonacci
+    prompt: "Write a Python function to calculate the nth Fibonacci number."
+    metric: contains_any
+    expected: ["def ", "fibonacci", "return", "if n"]
+    tags: ["code", "python", "algorithm"]
+
+  # ═══════════════════════════════════════════════════
+  # 摘要与理解测试 (Summarization Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: summary_article
+    prompt: |
+      Summarize this in one sentence:
+      "Machine learning is a subset of artificial intelligence that enables computers to learn from data without being explicitly programmed. It uses algorithms to identify patterns and make predictions based on input data."
+    metric: contains_any
+    expected:
+      ["machine learning", "AI", "data", "patterns", "learn", "algorithms"]
+    tags: ["summary", "tech"]
+
+  # ═══════════════════════════════════════════════════
+  # 指令遵循测试 (Instruction Following Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: instruction_format_json
+    prompt: "List three colors in JSON array format."
+    metric: regex_match
+    expected: "\\[.*\\]"
+    tags: ["instruction", "format"]
+
+  - id: instruction_word_count
+    prompt: "Describe artificial intelligence in exactly 10 words."
+    metric: contains_any
+    expected: ["AI", "artificial", "intelligence", "machine", "computer"]
+    tags: ["instruction", "constraint"]
+
+  # ═══════════════════════════════════════════════════
+  # 多语言测试 (Multilingual Tests)
+  # ═══════════════════════════════════════════════════
+
+  - id: multilingual_chinese
+    prompt: "用中文回答：中国的首都是哪里？"
+    metric: contains
+    expected: "北京"
+    tags: ["multilingual", "chinese"]
+
+  - id: multilingual_translation
+    prompt: "Translate 'Hello, how are you?' to Chinese."
+    metric: contains_any
+    expected: ["你好", "您好"]
+    tags: ["multilingual", "translation"]

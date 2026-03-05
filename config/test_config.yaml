@@ -1,0 +1,62 @@
+# CanopyWave Model Tester - Unified Configuration
+#
+# This file contains all standard test parameters and settings
+# following Google SRE SLI/SLO standards.
+
+# ═══════════════════════════════════════════════════
+# Standard Test Parameters
+# ═══════════════════════════════════════════════════
+
+test_params:
+  # Request settings
+  timeout_seconds: 120 # Maximum time to wait for response
+  max_retries: 3 # Number of retry attempts on failure
+
+  # Quality assurance test settings
+  qa:
+    default_model: "deepseek/deepseek-chat-v3.2"
+    max_tokens: 1000 # Default max tokens for QA tests
+    temperature: 0.7 # Default temperature for QA tests
+
+  # Performance test settings
+  perf:
+    warmup_requests: 3 # Warmup requests (not counted in stats)
+    sample_requests: 20 # Sample size for latency statistics
+    concurrent_requests: 5 # Concurrent requests for throughput test
+    stability_requests: 30 # Total requests for stability test
+    stability_interval: 1.0 # Seconds between stability requests
+    ttfb_samples: 10 # Samples for TTFB measurement
+
+# ═══════════════════════════════════════════════════
+# SLO (Service Level Objectives)
+# ═══════════════════════════════════════════════════
+
+slo:
+  # Latency targets (milliseconds)
+  latency_p50_ms: 5000 # P50 < 5 seconds
+  latency_p99_ms: 30000 # P99 < 30 seconds
+
+  # Error rate target
+  error_rate_percent: 1.0 # Error rate < 1%
+
+  # Availability target
+  availability_percent: 99.9 # Availability > 99.9%
+
+  # Extended SLOs (for full performance tests)
+  ttfb_p99_ms: 5000 # TTFB P99 < 5 seconds
+  throughput_min_rps: 0.1 # Minimum throughput: 0.1 req/s
+  stability_score_min: 80.0 # Minimum stability score: 80/100
+
+# ═══════════════════════════════════════════════════
+# Models to Test
+# ═══════════════════════════════════════════════════
+
+models:
+  - zai/glm-5
+  - deepseek/deepseek-chat-v3.2
+  - moonshotai/kimi-k2.5
+  - zai/glm-4.7
+  - xiaomimimo/mimo-v2-flash
+  - minimax/minimax-m2.5
+  - minimax/minimax-m2.1
+  - qwen/qwen-3.5

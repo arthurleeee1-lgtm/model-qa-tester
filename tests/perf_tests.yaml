@@ -1,0 +1,32 @@
+# CanopyWave API Performance Test Configuration
+#
+# This file references the unified test configuration.
+# For parameter details, see: config/test_config.yaml
+
+# Import standard settings (reference only - actual values in config/test_config.yaml)
+# test_settings: warmup=3, samples=20, timeout=120s
+# slo: P50<5s, P99<30s, error<1%, availability>99.9%
+
+# Test settings (override defaults if needed)
+test_settings:
+  warmup_requests: 3
+  sample_requests: 20
+  timeout_seconds: 120
+
+# SLO thresholds (override defaults if needed)
+slo:
+  latency_p50_ms: 5000
+  latency_p99_ms: 30000
+  error_rate_percent: 1.0
+  availability_percent: 99.9
+
+# Models to test
+models:
+  - zai/glm-5
+  - deepseek/deepseek-chat-v3.2
+  - moonshotai/kimi-k2.5
+  - zai/glm-4.7
+  - xiaomimimo/mimo-v2-flash
+  - minimax/minimax-m2.5
+  - minimax/minimax-m2.1
+  - qwen/qwen-3.5
