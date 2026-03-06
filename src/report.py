@@ -415,6 +415,15 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 return null;
             }, [reportType, dynamicData]);
 
+            const [expandedRows, setExpandedRows] = useState({});
+
+            const toggleRow = (idx) => {
+                setExpandedRows(prev => ({
+                    ...prev,
+                    [idx]: !prev[idx]
+                }));
+            };
+
             return (
                 <div className="min-h-screen bg-background text-slate-200">
                     <nav className="border-b border-surface bg-surface/50 backdrop-blur sticky top-0 z-50">
@@ -481,9 +490,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                                     <ResponsiveContainer width="100%" height="100%">
                                                         <BarChart data={viewData.charts.modelCompare}>
                                                             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                                                            <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
-                                                            <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
-                                                            <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155' }} />
+                                                            <XAxis dataKey="name" stroke="#94a3b8" tick={ { fill: '#94a3b8' } } />
+                                                            <YAxis stroke="#94a3b8" tick={ { fill: '#94a3b8' } } />
+                                                            <Tooltip contentStyle={ { backgroundColor: '#1e293b', borderColor: '#334155' } } />
                                                             <Legend />
                                                             <Bar dataKey="latencyP50" name="P50 Latency" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                                                             <Bar dataKey="latencyP99" name="P99 Latency" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -497,9 +506,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                                     <ResponsiveContainer width="100%" height="100%">
                                                         <BarChart data={viewData.charts.modelCompare}>
                                                             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                                                            <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
-                                                            <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
-                                                            <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155' }} />
+                                                            <XAxis dataKey="name" stroke="#94a3b8" tick={ { fill: '#94a3b8' } } />
+                                                            <YAxis stroke="#94a3b8" tick={ { fill: '#94a3b8' } } />
+                                                            <Tooltip contentStyle={ { backgroundColor: '#1e293b', borderColor: '#334155' } } />
                                                             <Legend />
                                                             <Bar dataKey="throughput" name="Req/Sec" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                                         </BarChart>
@@ -519,7 +528,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                                         <XAxis dataKey="name" stroke="#94a3b8" />
                                                         <YAxis yAxisId="left" stroke="#94a3b8" />
                                                         <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" />
-                                                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155' }} />
+                                                        <Tooltip contentStyle={ { backgroundColor: '#1e293b', borderColor: '#334155' } } />
                                                         <Legend />
                                                         <Bar yAxisId="left" dataKey="passRate" name="Pass Rate %" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                                         <Bar yAxisId="right" dataKey="latency" name="Avg Latency (s)" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -537,6 +546,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                             <table className="w-full text-left border-collapse min-w-max">
                                                 <thead>
                                                     <tr className="border-b border-card text-slate-400 text-sm uppercase tracking-wider">
+                                                        <th className="p-4 font-medium w-8"></th>
                                                         <th className="p-4 font-medium">Model</th>
                                                         <th className="p-4 font-medium">P50 (ms)</th>
                                                         <th className="p-4 font-medium">P99 (ms)</th>
@@ -549,24 +559,141 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                                                 <tbody className="divide-y divide-card/50">
                                                     {viewData.rawData.map((row, idx) => {
                                                         const allSlosPassed = row.slo_results?.every(s => s.passed);
+                                                        const isExpanded = !!expandedRows[idx];
                                                         return (
-                                                            <tr key={idx} className="hover:bg-slate-700/20 transition-colors">
-                                                                <td className="p-4 font-mono text-sm text-primary">{row.model}</td>
-                                                                <td className="p-4">{row.latency?.p50_ms?.toFixed(0) || '-'}</td>
-                                                                <td className="p-4">{row.latency?.p99_ms?.toFixed(0) || '-'}</td>
-                                                                <td className="p-4">{row.concurrent?.throughput_rps?.toFixed(2) || '-'} RPS</td>
-                                                                <td className="p-4">{row.ttfb?.p99_ms?.toFixed(0) || '-'} ms</td>
-                                                                <td className="p-4">{row.errors?.error_rate_percent?.toFixed(2) || '0'}%</td>
-                                                                <td className="p-4 text-center">
-                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${allSlosPassed ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
-                                                                        {allSlosPassed ? 'PASS' : 'FAIL'}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
+                                                            <React.Fragment key={idx}>
+                                                                <tr 
+                                                                    onClick={() => toggleRow(idx)}
+                                                                    className="hover:bg-slate-700/20 transition-colors cursor-pointer group"
+                                                                >
+                                                                    <td className="p-4 text-slate-500 group-hover:text-primary transition-colors">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                                                    </td>
+                                                                    <td className="p-4 font-mono text-sm text-primary">{row.model}</td>
+                                                                    <td className="p-4">{row.latency?.p50_ms?.toFixed(0) || '-'}</td>
+                                                                    <td className="p-4">{row.latency?.p99_ms?.toFixed(0) || '-'}</td>
+                                                                    <td className="p-4">{row.concurrent?.throughput_rps?.toFixed(2) || '-'} RPS</td>
+                                                                    <td className="p-4">{row.ttfb?.p99_ms?.toFixed(0) || '-'} ms</td>
+                                                                    <td className="p-4">{row.errors?.error_rate_percent?.toFixed(2) || '0'}%</td>
+                                                                    <td className="p-4 text-center">
+                                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${allSlosPassed ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                                                                            {allSlosPassed ? 'PASS' : 'FAIL'}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                                {isExpanded && (
+                                                                    <tr className="bg-card/30">
+                                                                        <td colSpan="8" className="p-6 border-b border-card">
+                                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                                                {/* Latency Details */}
+                                                                                <div className="space-y-3">
+                                                                                    <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wide border-b border-slate-700 pb-2">Latency Details</h4>
+                                                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                                                        <span className="text-slate-400">Min:</span><span className="text-right font-mono">{row.latency?.min_ms?.toFixed(1) || '-'} ms</span>
+                                                                                        <span className="text-slate-400">P50:</span><span className="text-right font-mono">{row.latency?.p50_ms?.toFixed(1) || '-'} ms</span>
+                                                                                        <span className="text-slate-400">P90:</span><span className="text-right font-mono">{row.latency?.p90_ms?.toFixed(1) || '-'} ms</span>
+                                                                                        <span className="text-slate-400">P95:</span><span className="text-right font-mono">{row.latency?.p95_ms?.toFixed(1) || '-'} ms</span>
+                                                                                        <span className="text-slate-400">P99:</span><span className="text-right font-mono text-warning font-semibold">{row.latency?.p99_ms?.toFixed(1) || '-'} ms</span>
+                                                                                        <span className="text-slate-400">Max:</span><span className="text-right font-mono text-danger font-semibold">{row.latency?.max_ms?.toFixed(1) || '-'} ms</span>
+                                                                                        <span className="text-slate-400">Mean:</span><span className="text-right font-mono">{row.latency?.mean_ms?.toFixed(1) || '-'} ms</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/* Stability & TTFB */}
+                                                                                <div className="space-y-3">
+                                                                                    <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wide border-b border-slate-700 pb-2">Extended Metrics</h4>
+                                                                                    {row.stability && (
+                                                                                        <div className="text-sm space-y-2">
+                                                                                            <div className="flex justify-between"><span className="text-slate-400">Stability Score:</span><span className="font-bold text-primary">{row.stability.stability_score?.toFixed(1)}/100</span></div>
+                                                                                            <div className="flex justify-between"><span className="text-slate-400">Degradation:</span><span>{row.stability.degradation_percent?.toFixed(1)}%</span></div>
+                                                                                            <div className="flex justify-between"><span className="text-slate-400">Error Spikes:</span><span>{row.stability.error_spikes}</span></div>
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {row.ttfb && (
+                                                                                        <div className="text-sm space-y-2 mt-4 pt-4 border-t border-slate-700/50">
+                                                                                            <div className="flex justify-between"><span className="text-slate-400">TTFB Mean:</span><span className="font-mono">{row.ttfb.mean_ms?.toFixed(1)} ms</span></div>
+                                                                                            <div className="flex justify-between"><span className="text-slate-400">TTFB P99:</span><span className="font-mono text-warning">{row.ttfb.p99_ms?.toFixed(1)} ms</span></div>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                                {/* SLO Check Results */}
+                                                                                <div className="space-y-3">
+                                                                                    <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wide border-b border-slate-700 pb-2">SLO Checks</h4>
+                                                                                    <div className="space-y-2 text-sm">
+                                                                                        {row.slo_results?.map((slo, i) => (
+                                                                                            <div key={i} className="flex items-start gap-2">
+                                                                                                {slo.passed 
+                                                                                                    ? <svg className="w-4 h-4 text-success shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                                                                    : <svg className="w-4 h-4 text-danger shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                                                                }
+                                                                                                <span className={slo.passed ? "text-slate-300" : "text-danger"}>
+                                                                                                    <span className="font-medium mr-1">{slo.metric}:</span>
+                                                                                                    {slo.detail}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+                                                            </React.Fragment>
                                                         );
                                                     })}
                                                 </tbody>
                                             </table>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {!viewData.isPerf && viewData.rawData && (
+                                    <div className="bg-surface border border-slate-700/50 rounded-2xl p-6 shadow-xl mt-8">
+                                        <h3 className="text-lg font-bold mb-6">QA Detailed Results</h3>
+                                        <div className="space-y-4">
+                                            {viewData.rawData.map((test, idx) => (
+                                                <div key={idx} className={`border rounded-xl p-5 ${test.passed ? 'border-success/20 bg-success/5' : 'border-danger/20 bg-danger/5'}`}>
+                                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                                        <div>
+                                                            <div className="flex items-center gap-3">
+                                                                <h4 className="font-bold text-lg text-white">{test.test_id}</h4>
+                                                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface border border-slate-700 font-mono text-primary">
+                                                                    {test.model.split('/').pop()}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm text-slate-400 mt-1 flex gap-4">
+                                                                <span>Metric: <span className="text-slate-300">{test.metric_type}</span></span>
+                                                                <span>Latency: <span className="text-slate-300">{test.latency?.toFixed(2)}s</span></span>
+                                                                <span>Score: <span className="text-slate-300">{test.score?.toFixed(2)}</span></span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${test.passed ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                                                            {test.verdict}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4">
+                                                        <div className="bg-background/80 p-4 rounded-lg border border-slate-800">
+                                                            <div className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Prompt</div>
+                                                            <div className="text-slate-300 whitespace-pre-wrap font-serif italic">{test.prompt}</div>
+                                                        </div>
+                                                        <div className="bg-background/80 p-4 rounded-lg border border-slate-800 flex flex-col gap-4">
+                                                            <div>
+                                                                <div className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Model Response</div>
+                                                                <div className="text-slate-200 whitespace-pre-wrap max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                                                    {test.response_content || <span className="text-slate-600 italic">No response</span>}
+                                                                </div>
+                                                            </div>
+                                                            {test.error && (
+                                                                <div className="mt-auto pt-2">
+                                                                    <div className="text-xs uppercase tracking-wider text-danger-400 font-bold mb-1">Error</div>
+                                                                    <div className="text-danger-300 font-mono text-xs">{test.error}</div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 )}
@@ -617,24 +744,27 @@ MARKDOWN_TEMPLATE = '''# {{ suite.suite_name }}
 | {{ r.test_id }} | {{ r.model.split('/')[-1] }} | {{ r.metric_type }} | {{ "%.2f"|format(r.latency) }}s | {{ "%.2f"|format(r.score) }} | {% if r.passed %}✅ PASS{% elif r.verdict == 'ERROR' %}⚠️ ERROR{% else %}❌ FAIL{% endif %} |
 {% endfor %}
 
----
-
-{% if suite.failed_tests > 0 or suite.error_tests > 0 %}
-## Failed/Error Tests Details
+## Detailed Test Output
 
 {% for r in results %}
-{% if not r.passed %}
 ### {{ r.test_id }}
 
 - **Model**: `{{ r.model }}`
 - **Verdict**: {{ r.verdict }}
 - **Score**: {{ "%.2f"|format(r.score) }}
-- **Prompt**: {{ r.prompt[:100] }}{% if r.prompt|length > 100 %}...{% endif %}
+- **Latency**: {{ "%.2f"|format(r.latency) }}s
+- **Prompt**:
+  > {{ r.prompt | replace('\n', '\n> ') }}
+
+- **Response Content**:
+  ```text
+  {{ r.response_content }}
+  ```
+
 {% if r.error %}
 - **Error**: {{ r.error }}
 {% endif %}
 
-{% endif %}
+---
 {% endfor %}
-{% endif %}
 '''

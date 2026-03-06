@@ -488,7 +488,7 @@ class PerfTester:
         from rich.table import Table
         from rich.panel import Panel
         
-        console = Console()
+        console = getattr(self, "console", Console())
         
         # Header
         console.print(f"\n[bold]═══ Performance Test: {result.model} ═══[/bold]\n")
@@ -961,7 +961,7 @@ class PerfTester:
         from rich.console import Console
         from rich.table import Table
         
-        console = Console()
+        console = getattr(self, "console", Console())
         
         # Header
         console.print(f"\n[bold]═══ Full Performance Report: {result.model} ═══[/bold]\n")

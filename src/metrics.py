@@ -199,6 +199,15 @@ class MetricEvaluator:
         **kwargs
     ) -> EvaluationResult:
         """Check if response matches a regex pattern."""
+        # Handle None response
+        if response is None:
+            return EvaluationResult(
+                score=0.0,
+                passed=False,
+                metric_type=MetricType.REGEX_MATCH.value,
+                details={"error": "Response is None"},
+                verdict="ERROR"
+            )
         try:
             match = re.search(pattern, response, re.IGNORECASE | re.MULTILINE)
             matched = match is not None
@@ -235,6 +244,15 @@ class MetricEvaluator:
             reference: Reference text for comparison
             threshold: Minimum score to pass (0.0 to 1.0)
         """
+        # Handle None response
+        if response is None:
+            return EvaluationResult(
+                score=0.0,
+                passed=False,
+                metric_type=MetricType.SEMANTIC_SIMILARITY.value,
+                details={"error": "Response is None"},
+                verdict="ERROR"
+            )
         try:
             from sentence_transformers import util
             
@@ -275,6 +293,15 @@ class MetricEvaluator:
         
         Uses simple n-gram overlap calculation.
         """
+        # Handle None response
+        if response is None:
+            return EvaluationResult(
+                score=0.0,
+                passed=False,
+                metric_type=MetricType.BLEU.value,
+                details={"error": "Response is None"},
+                verdict="ERROR"
+            )
         try:
             # Simple BLEU implementation
             response_tokens = response.lower().split()
@@ -340,6 +367,15 @@ class MetricEvaluator:
         """
         Calculate ROUGE-L score (longest common subsequence).
         """
+        # Handle None response
+        if response is None:
+            return EvaluationResult(
+                score=0.0,
+                passed=False,
+                metric_type=MetricType.ROUGE.value,
+                details={"error": "Response is None"},
+                verdict="ERROR"
+            )
         try:
             response_tokens = response.lower().split()
             reference_tokens = reference.lower().split()
@@ -400,6 +436,15 @@ class MetricEvaluator:
         - Fluency (length/coherence proxy): 0.15
         - Diversity: 0.1
         """
+        # Handle None response
+        if response is None:
+            return EvaluationResult(
+                score=0.0,
+                passed=False,
+                metric_type=MetricType.COMPOSITE.value,
+                details={"error": "Response is None"},
+                verdict="ERROR"
+            )
         if weights is None:
             weights = {
                 "semantic": 0.4,
